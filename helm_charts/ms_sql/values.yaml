@@ -1,0 +1,6 @@
+mssql:
+  image: mcr.microsoft.com/mssql/server:2022-latest
+  password: "password"
+
+service:
+  port: 1433

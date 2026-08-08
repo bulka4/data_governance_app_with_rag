@@ -1,0 +1,56 @@
+# kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    # Remove taints so we can schedule pods on the control-plane as well
+    # kubeadmConfigPatches:
+    #   - |
+    #     kind: InitConfiguration
+    #     nodeRegistration:
+    #       taints: []
+    extraPortMappings:
+      # port on which cluster is listening. Using this port we communicate with the cluster using kubectl
+      # so it needs to be used in the kubeconfig file. We use that port when modifying the kubeconfig file
+      # in the image for interacting with kind (interacting.kind.Dockerfile Dockerfile)
+      - containerPort: 6443
+        hostPort: 6443
+        protocol: TCP
+      # ports for accessing services. We will use nodePort services (like webserver service specified in the helm_charts/airflow/values.yaml)
+      # which maps containerPort 30080 to the port in containers using the service.
+      - containerPort: 30080
+        hostPort: 8080
+        protocol: TCP
+      - containerPort: 30050
+        hostPort: 5000
+        protocol: TCP
+      - containerPort: 30000
+        hostPort: 3000
+        protocol: TCP
+    # Mount host folders into the node container so it can be mounted into pods
+    extraMounts:
+      # Mounting used in a PV with code pulled by git-sync
+      # hostPath is a path on the local host where to save data
+      - hostPath: C:/Users/mbulka/Documents/projects/my_projects/learning/data_and_ml_platform/data_and_ml_platform_kind/git_code
+        # containerPath is a path can be used in a PV as a hostPath
+        containerPath: /git_code
+      # Mounting used in a PV with apps code, mounted into the development pod (used in the development_pods/mlflow_project Helm chart)
+      # hostPath is a path on the local host where to save data
+      - hostPath: C:/Users/mbulka/Documents/projects/my_projects/learning/data_and_ml_platform/data_and_ml_platform_kind/apps
+        # containerPath is a path can be used in a PV as a hostPath
+        containerPath: /apps
+  # - role: worker
+  #   # Mount host folders into the node container so it can be mounted into pods
+  #   extraMounts:
+  #     # Mounting used in a PV with code pulled by git-sync
+  #     # hostPath is a path on the local host where to save data
+  #     - hostPath: C:/Users/mbulka/Documents/projects/my_projects/learning/data_and_ml_platform/data_and_ml_platform_kind/git_code
+  #       # containerPath is a path can be used in a PV as a hostPath
+  #       containerPath: /git_code
+  #     # Mounting used in a PV with apps code, mounted into the development pod (used in the development_pods/mlflow_project Helm chart)
+  #     # hostPath is a path on the local host where to save data
+  #     - hostPath: C:/Users/mbulka/Documents/projects/my_projects/learning/data_and_ml_platform/data_and_ml_platform_kind/apps
+  #       # containerPath is a path can be used in a PV as a hostPath
+  #       containerPath: /apps
+networking:
+  disableDefaultCNI: false

@@ -1,0 +1,82 @@
+# Initialization script which create sample tables, views and stored procedures on the deployed MS SQL Server for which we will be able
+# to create documentation in the Data governance app.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mssql-init-script
+
+data:
+  init.sql: |
+
+    CREATE DATABASE GovernanceDemo;
+    GO
+
+    USE GovernanceDemo;
+    GO
+
+
+    CREATE TABLE Customers
+    (
+        CustomerId INT PRIMARY KEY,
+        Name NVARCHAR(100),
+        Country NVARCHAR(100)
+    );
+    GO
+
+
+    CREATE TABLE Orders
+    (
+        OrderId INT PRIMARY KEY,
+        CustomerId INT,
+        Amount DECIMAL(10,2),
+
+        FOREIGN KEY(CustomerId)
+            REFERENCES Customers(CustomerId)
+    );
+    GO
+
+
+    INSERT INTO Customers VALUES
+    (1,'John Smith','USA'),
+    (2,'Anna Brown','UK');
+    GO
+
+
+    INSERT INTO Orders VALUES
+    (100,1,250.00),
+    (101,2,500.00);
+    GO
+
+
+    -- Create a view with customer orders (so we can see in the Data governance app, in the data lineage section,
+    -- that this view exists and which tables it uses as a source)
+    CREATE VIEW CustomerOrders AS
+    SELECT
+        c.Name,
+        o.Amount
+    FROM Customers c
+    JOIN Orders o
+        ON c.CustomerId=o.CustomerId;
+    GO
+
+
+    -- Create a new table called "CustomerOrderTotals" with total order amount per client (so we can see in the Data governance app, in the data lineage section,
+    -- that this procedure creates this table)
+    CREATE PROCEDURE CalculateCustomerOrderTotals
+    AS
+    BEGIN
+        CREATE TABLE CustomerOrderTotals
+        (
+            CustomerId INT PRIMARY KEY,
+            TotalOrderAmount DECIMAL(18,2)
+        );
+
+        INSERT INTO CustomerOrderTotals (CustomerId, TotalOrderAmount)
+        SELECT
+            CustomerId,
+            SUM(Amount)
+        FROM Orders
+        GROUP BY CustomerId;
+    END;
+    GO

@@ -1,0 +1,14 @@
+# Service used by the MS SQL Server Statefulset (thanks to this we can connect to the SQL Server using the `sqlcmd -S mssql -U ... -P ...` command 
+# where `mssql` = metadata.name is the MS SQL Server host name)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql
+spec:
+  selector:
+    app: mssql
+
+  ports:
+  - port: 1433
+    targetPort: 1433

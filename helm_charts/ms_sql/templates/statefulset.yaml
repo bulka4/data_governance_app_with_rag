@@ -1,0 +1,46 @@
+# Statefulset deploying the MS SQL Server.
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mssql
+spec:
+  serviceName: mssql
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: mssql
+
+  template:
+    metadata:
+      labels:
+        app: mssql
+
+    spec:
+      containers:
+      - name: sqlserver
+        image: {{ .Values.mssql.image }}
+
+        ports:
+        - containerPort: 1433
+
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+
+        # Password for the "sa" built-in system administrator account
+        - name: MSSQL_SA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mssql-secret
+              key: SA_PASSWORD
+
+        - name: MSSQL_PID
+          value: "Developer"
+
+        readinessProbe:
+          tcpSocket:
+            port: 1433
+          initialDelaySeconds: 20
+          periodSeconds: 10
