@@ -1,0 +1,55 @@
+replicaCount: 1
+
+image:
+  repository: nodejs
+  tag: latest
+  pullPolicy: IfNotPresent
+
+env:
+  # NODE_ENV = 'development' will cause that running 'nmp install' will install also the packages from the 'devDependencies'
+  # section in the package.json file. We want this so we can use 'nodemon' to run the nodejs app, so we can change its code
+  # and see results immediately, without restarting the app.
+  NODE_ENV: development
+
+  # Parameters of the MongoDB where we will save extracted metadata
+  # The same DNS as in the mongo_db Helm chart
+  MONGO_DNS: mongo-db
+  # Chosen database name which will be created when running the script in the Job
+  MONGO_DATABASE: db_doc
+
+  # Parameters of the source SQL server from which we will extract metadata
+  # The same DNS as release name of the ms_sql Helm chart + namespace: {ms-sql-release-name}.{namespace}
+  SQL_SERVER_DNS: mssql.source-db
+  SQL_DATABASE: master
+
+  # URL to the Redis database used for caching of the format: redis://:<password>@<redis-DNS>:6379
+  # When using the helm_charts/redis Helm chart from this project for deploying Redis, then redis-DNS is 
+  # "<release-name>-master" where "<release-name>" is the name of the release of the Helm chart
+  REDIS_URL: redis://:Password123!@redis-master:6379
+
+  # secret used by express-session to sign the session cookie
+  SESSION_SECRET: session-secret
+
+# Secret for connecting to the source SQL server
+secret:
+  SQL_USER: sa
+  # The same password as in the ms_sql Helm chart
+  SQL_PASSWORD: Password123!
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1
+    memory: 1Gi
+
+# Parameters regarding mounting a volume containing scripts to run in pods.
+scriptsMounting:
+  # Path to the folder on the host (kind node) which will be used as a volume. 
+  # The same path needs to be provided in the kind-config.yaml file in the nodes[0].extraMounts.containerPath field to 
+  # specify which path on the host (which runs kind) will correspond to this path.
+  # This path should contain the 'services' folder from the repo on the host.
+  hostPath: /services
+  # Path to a subfolder in volume with the app to run which will be mounted 
+  subPath: data_governance_backend

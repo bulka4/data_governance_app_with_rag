@@ -1,0 +1,21 @@
+# A pod for testing MS SQL Server. To run a SQL query, use this command: sqlcmd -S mssql -U sa -P "$SA_PASSWORD" -Q "SELECT 1"
+# To list tables: sqlcmd -S mssql -U sa -P "$SA_PASSWORD" -Q "USE GovernanceDemo; SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mssql-tools
+  namespace: source-db
+spec:
+  containers:
+    - name: tools
+      image: mcr.microsoft.com/mssql-tools
+      command: ["/bin/bash"]
+      args: ["-c", "while true; do sleep 3600; done"]
+
+      env:
+      - name: SA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: mssql-secret
+            key: SA_PASSWORD

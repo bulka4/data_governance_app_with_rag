@@ -74,9 +74,11 @@ data:
 
         INSERT INTO CustomerOrderTotals (CustomerId, TotalOrderAmount)
         SELECT
-            CustomerId,
-            SUM(Amount)
-        FROM Orders
+            c.CustomerId,
+            SUM(o.Amount)
+        FROM Customers c
+        JOIN Orders o
+            ON c.CustomerId=o.CustomerId;
         GROUP BY CustomerId;
     END;
     GO

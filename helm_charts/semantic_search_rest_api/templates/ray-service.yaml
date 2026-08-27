@@ -1,0 +1,97 @@
+# Run a Ray Serve app (saved as a .zip file)
+
+apiVersion: ray.io/v1
+kind: RayService
+metadata:
+  name: {{ .Values.rayService.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  # Specify which Ray Serve app to use
+  # import_path has the following format: <app-filename>:<bound-deployment>, where:
+  # - app-filename - Name of the file with the Ray Serve app (without the .py extension)
+  # - bound-deployment - Name of the bound deployment - output of the APIClassName.bind() command, where APIClassName is name of the 
+  #                      class where we define Rest API endpoints.
+  # working_dir - Path to the .zip folder containing all the files needed for the Ray app
+  #             - If this is a local folder in the image, then use this value: file:///folder1/folder2.zip
+  #             - It can be also a remote storage like Azure Blob Storage or GitHub repo (it might need to be a .zip folder as well)
+  serveConfigV2: |
+    applications:
+      - name: rag-service
+        import_path: "{{ .Values.app.fileName }}:{{ .Values.app.boundDeploymentName }}"
+        runtime_env:
+          working_dir: file://{{.Values.app.workingDir}}
+  rayClusterConfig:
+    rayVersion: {{ .Values.rayService.rayVersion }}
+    # Ray Head node specification
+    headGroupSpec:
+      serviceType: ClusterIP
+      rayStartParams: {}
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: {{ .Values.image }} # Name of the image
+              imagePullPolicy: IfNotPresent # Use a local image
+              resources:
+                requests:
+                  cpu: {{ .Values.rayService.headCpu }}
+                  memory: {{ .Values.rayService.headMemory }}
+                limits:
+                  cpu: {{ .Values.rayService.headCpu }}
+                  memory: {{ .Values.rayService.headMemory }}
+
+              env:
+                {{- range $key, $value := .Values.env }}
+                - name: {{ $key }}
+                  value: {{ $value | quote }}
+                {{- end }}
+
+          {{- if .Values.scriptsMounting.enabled }}
+              volumeMounts:
+                # Mount a folder from a volume linked to the host containing script with FastAPI routes.
+                - name: scripts
+                  mountPath: /semantic_search
+                  subPath: {{ .Values.scriptsMounting.subPath }}
+
+          # Volume linked to the host containing script with FastAPI routes
+          volumes:
+            - name: scripts
+              hostPath:
+                path: {{ .Values.scriptsMounting.hostPath }}
+          {{- end }}
+
+    # Ray Worker nodes specification
+    workerGroupSpecs:
+      # Number of replicas of Worker Pods
+      - replicas: {{ .Values.rayService.replicas }}
+        minReplicas: 1
+        maxReplicas: 5
+        groupName: small-group
+        rayStartParams: {}
+        template:
+          spec:
+            containers:
+              - name: ray-worker
+                image: {{ .Values.image }} # URL of an image from a registry
+                imagePullPolicy: IfNotPresent # Use a local image
+                resources:
+                  requests:
+                    cpu: {{ .Values.rayService.workerCpu }}
+                    memory: {{ .Values.rayService.workerMemory }}
+                  limits:
+                    cpu: {{ .Values.rayService.workerCpu }}
+                    memory: {{ .Values.rayService.workerMemory }}
+
+          {{- if .Values.scriptsMounting.enabled }}
+                volumeMounts:
+                # Mount a folder from a volume linked to the host containing script with FastAPI routes.
+                - name: scripts
+                  mountPath: /semantic_search
+                  subPath: {{ .Values.scriptsMounting.subPath }}
+                  
+            # Volume linked to the host containing script with FastAPI routes
+            volumes:
+              - name: scripts
+                hostPath:
+                  path: {{ .Values.scriptsMounting.hostPath }}
+          {{- end }}

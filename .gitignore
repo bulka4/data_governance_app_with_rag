@@ -1,0 +1,4 @@
+**/.kube
+**/node_modules
+package-lock.json
+**/ml_models

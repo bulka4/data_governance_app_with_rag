@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ .Release.Name }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+
+    spec:
+      containers:
+        - name: node-app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          # Run the Node.js app
+          command: ["sh", "-c"]
+          args: 
+            - |
+              cd /app && \
+              
+              # Install nodejs dependencies from the package.json
+              npm install && \
+
+              # Run the app in the dev mode, so that when we change the app's code, it will take effect without a need for
+              # restarting the app.
+              npm run devStart
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+
+            {{- range $key, $value := .Values.secret }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-secret
+                  key: {{ $key }}
+            {{- end }}
+
+          volumeMounts:
+            # Mount a folder from a volume linked to kind node containing scripts from the host to run
+            - name: services
+              mountPath: /app
+              subPath: {{ .Values.scriptsMounting.subPath }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+      # Volume linked to kind node containing scripts from the host to run
+      volumes:
+        - name: services
+          hostPath:
+            path: {{ .Values.scriptsMounting.hostPath }}

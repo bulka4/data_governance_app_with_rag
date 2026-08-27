@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-ingestion
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+
+      containers:
+        - name: ingestion
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          # Run the script for ingesting embeddings
+          # command: ["python", "/app/main.py"]
+          command: ["sleep", "3600"]
+
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+
+          volumeMounts:
+            - name: ingestion-data
+              mountPath: /app
+              subPath: {{ .Values.scriptsMounting.subPath }}
+
+      volumes:
+        - name: ingestion-data
+          hostPath:
+            path: {{ .Values.scriptsMounting.hostPath }}

@@ -1,0 +1,21 @@
+# A Service linked to the Ray Head Pod.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.rayService.name }}-head"
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.rayService.name }}
+spec:
+  type: LoadBalancer
+  selector:
+    # The ray.io/node-type=head label is created automatically by RayService.
+    ray.io/node-type: head
+  ports:
+    - name: serve
+      port: 8000        # Port exposed inside the cluster
+      targetPort: 8000  # Must match Serve ingress port in your container (if 8000 doesn't work then try 10001)
+    - name: dashboard
+      port: 8265
+      targetPort: 8265

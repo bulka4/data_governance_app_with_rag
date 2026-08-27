@@ -1,0 +1,10 @@
+apiVersion: v2
+name: mongo-chart
+description: MongoDB deployment
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: mongodb
+    version: 19.1.17
+    repository: https://charts.bitnami.com/bitnami

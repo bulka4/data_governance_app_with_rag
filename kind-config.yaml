@@ -27,18 +27,13 @@ nodes:
       - containerPort: 30000
         hostPort: 3000
         protocol: TCP
-    # Mount host folders into the node container so it can be mounted into pods
+    # Mount host folders into the kind node container so they can be mounted into pods
+    # hostPath is a path on the local host with files
+    # containerPath is a path can be used in a volume as a hostPath
     extraMounts:
-      # Mounting used in a PV with code pulled by git-sync
-      # hostPath is a path on the local host where to save data
-      - hostPath: C:/Users/mbulka/Documents/projects/my_projects/learning/data_and_ml_platform/data_and_ml_platform_kind/git_code
-        # containerPath is a path can be used in a PV as a hostPath
-        containerPath: /git_code
-      # Mounting used in a PV with apps code, mounted into the development pod (used in the development_pods/mlflow_project Helm chart)
-      # hostPath is a path on the local host where to save data
-      - hostPath: C:/Users/mbulka/Documents/projects/my_projects/learning/data_and_ml_platform/data_and_ml_platform_kind/apps
-        # containerPath is a path can be used in a PV as a hostPath
-        containerPath: /apps
+      # Mounting code with services to run in pods
+      - hostPath: C:/Users/mbulka/Documents/projects/my_projects/learning/data_governance_app_with_rag/services
+        containerPath: /services
   # - role: worker
   #   # Mount host folders into the node container so it can be mounted into pods
   #   extraMounts:

@@ -1,0 +1,47 @@
+image:
+  # Name of a local image or remote repository URL
+  repository: nodejs
+  tag: latest
+  pullPolicy: IfNotPresent
+
+env:
+  # NODE_ENV = 'development' will cause that running 'nmp install' will install also the packages from the 'devDependencies'
+  # section in the package.json file. We want this so we can use 'nodemon' to run the nodejs app, so we can change its code
+  # and see results immediately, without restarting the app.
+  NODE_ENV: production
+
+  # Parameters of the MongoDB where we will save extracted metadata
+  # The same DNS as in the mongo_db Helm chart
+  MONGO_DNS: mongo-db
+  # Chosen database name which will be created when running the script in the Job
+  MONGO_DATABASE: db_doc
+
+  # Parameters of the source SQL server from which we will extract metadata
+  # The same DNS as release name of the ms_sql Helm chart + namespace: {ms-sql-release-name}.{namespace}
+  SQL_SERVER_DNS: mssql.source-db
+  SQL_DATABASE: master
+
+# Secret for connecting to the source SQL server
+secret:
+  SQL_USER: sa
+  # The same password as in the ms_sql Helm chart
+  SQL_PASSWORD: Password123!
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Parameters regarding mounting a volume containing scripts to run in pods.
+scriptsMounting:
+  # Path to the folder on the host (kind node) which will be used as a volume. 
+  # The same path needs to be provided in the kind-config.yaml file in the nodes[0].extraMounts.containerPath field to 
+  # specify which path on the host (which runs kind) will correspond to this path.
+  # This path should contain the 'services' folder from the repo on the host.
+  hostPath: /services
+  # Path to a subfolder in volume with the app to run which will be mounted 
+  subPath: metadata_extraction

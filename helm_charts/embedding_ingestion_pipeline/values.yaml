@@ -1,0 +1,40 @@
+image:
+  repository: semantic-search
+  tag: latest
+  pullPolicy: IfNotPresent
+
+env:
+  # Parameters related to the MongoDB database with a source documentation to create embeddings for
+  MONGO_HOST: mongo-db
+  MONGO_DB: db_doc
+  MONGO_COLLECTION: tablesDocs
+
+  # - DOWNLOAD_MODEL - String 'True' or 'False'
+  #     - When set to False, it will load already saved ONNX model
+  #     - When set to True, it will download a new model from Hugging Face and save it in the ONNX format using optimum-cli
+  # - MODEL_NAME, MODEL_PATH
+  #     - when download_model = True, then we need to provide both arguments:
+  #         - MODEL_NAME - Name of the model to download using optimum-cli, e.g. sentence-transformers/all-MiniLM-L6-v2
+  #         - MODEL_PATH - Where to save the downloaded model
+  #     - when download_model = False, then we need to provide only the model_path argument specifying the path of the
+  #         ONNX model to load
+  DOWNLOAD_MODEL: "True"
+  MODEL_NAME: sentence-transformers/all-MiniLM-L6-v2
+  MODEL_PATH: ../ml_models/all-MiniLM-L6-v2
+  
+  # Parameters related to Milvus collection where to insert the embeddings to
+  MILVUS_HOST: milvus
+  MILVUS_COLLECTION_NAME: my_docs
+  EMBEDDING_FIELD_NAME: embedding
+  TEXT_FIELD_NAME: text
+  METADATA_FIELD_NAME: metadata
+
+# Parameters regarding mounting a volume containing scripts to run in pods.
+scriptsMounting:
+  # Path to the folder on the host (kind node) which will be used as a volume. 
+  # The same path needs to be provided in the kind-config.yaml file in the nodes[0].extraMounts.containerPath field to 
+  # specify which path on the host (which runs kind) will correspond to this path.
+  # This path should contain the 'services' folder from the repo on the host.
+  hostPath: /services
+  # Path to a subfolder in volume with the app to run which will be mounted 
+  subPath: semantic_search/embedding_ingestion_pipeline

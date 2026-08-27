@@ -1,0 +1,69 @@
+namespace: semantic-search
+jobName: prepare-milvus-db
+
+# Parameters for the 'milvus' dependency. Here we setup Milvus to run in a standalone mode.
+milvus:
+  cluster:
+    enabled: false
+  pulsarv3:
+    enabled: false
+  # Reduce ammount of disk space Milvus is using
+  primary:
+    persistence:
+      enabled: true
+      size: 5Gi
+  etcd:
+    persistence:
+      enabled: true
+      size: 1Gi
+    # Limit number of replicas created to save memory
+    mode: standalone
+    replicas: 1
+  minio:
+    persistence:
+      enabled: true
+      size: 1Gi
+    # Limit number of replicas created to save memory
+    mode: standalone
+    replicas: 1
+  pulsar:
+    bookkeeper:
+      persistence:
+        enabled: true
+        size: 1Gi
+    journal:
+      persistence:
+        enabled: true
+        size: 1Gi
+    ledgers:
+      persistence:
+        enabled: true
+        size: 1Gi
+
+
+# Name of the image with the Python script preparing sample data in Milvus db which will be executed by the Job.
+image: semantic-search
+
+
+# Parameters related to the Python script preparing sample data in Milvus db.
+app:
+  # Name of the file with the app to run
+  fileName: main.py
+
+# Environment variables used by the Python script
+env:
+  MILVUS_COLLECTION_NAME: my_docs
+  ID_FIELD_NAME: id
+  EMBEDDING_FIELD_NAME: embedding
+  TEXT_FIELD_NAME: text
+  METADATA_FIELD_NAME: metadata
+
+# Parameters regarding mounting a volume containing scripts to run in pods.
+scriptsMounting:
+  # Path to the folder on the host (kind node) which will be used as a volume. 
+  # The same path needs to be provided in the kind-config.yaml file in the nodes[0].extraMounts.containerPath field to 
+  # specify which path on the host (which runs kind) will correspond to this path.
+  # This path should contain the 'services' folder from the repo on the host.
+  hostPath: /services
+  # Path to a subfolder in volume with the app to run which will be mounted 
+  subPath: semantic_search/create_milvus_collection

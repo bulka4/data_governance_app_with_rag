@@ -1,0 +1,10 @@
+apiVersion: v2
+name: redis
+description: Redis for caching in the Data Governance Backend. It will be reachable using the "<release-name>-master" DNS name.
+type: application
+version: 1.0.0
+
+dependencies:
+  - name: redis
+    version: "23.1.1"
+    repository: "oci://registry-1.docker.io/bitnamicharts"

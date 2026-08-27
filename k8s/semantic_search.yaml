@@ -1,0 +1,32 @@
+# A pod for testing code from the semantic_search folder and the semantic-search image. 
+# For example, from this pod, we can:
+#   - Prepare and use model from Hugging Face for generating embeddings
+#     - Run the services/semantic_search/model_preparation/download_model.sh script for downloading a model from HuggingFace
+#     - Run the services/semantic_search/model_preparation/load_model.py script for loading a model and generating an output with it
+#   - Run code used in the Ray Serve app for semantic search (the routes/routes.py script) 
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: semantic-search
+  namespace: semantic-search
+spec:
+  containers:
+  - name: model
+    # Name of the image that we built and loaded to kind using the bash/build_and_load_images.sh script
+    image: semantic-search
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/bash"]
+    args: ["-c", "while true; do sleep 3600; done"]
+
+    volumeMounts:
+    # Mount a folder from a volume linked to the host containing script with FastAPI routes.
+    - name: scripts
+      mountPath: /semantic_search
+      subPath: semantic_search
+
+  # Volume linked to the host containing script with FastAPI routes
+  volumes:
+    - name: scripts
+      hostPath:
+        path: /services

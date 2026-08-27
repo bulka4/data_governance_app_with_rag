@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: Job
+
+metadata:
+  name: {{ .Release.Name }}
+
+spec:
+  backoffLimit: 3
+
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+
+    spec:
+      restartPolicy: Never
+
+      containers:
+        - name: data-preparation
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          # Run the script for metadata extraction
+          command: ["sh", "-c"]
+          args: 
+            - |
+              cd /app && \
+              
+              # Install nodejs dependencies from the package.json
+              npm install && \
+
+              # Run the script
+              node main.js
+
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+
+            {{- range $key, $value := .Values.secret }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-secret
+                  key: {{ $key }}
+            {{- end }}
+
+          volumeMounts:
+            # Mount a folder from a volume linked to kind node containing scripts from the host to run
+            - name: services
+              mountPath: /app
+              subPath: {{ .Values.scriptsMounting.subPath }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+      # Volume linked to kind node containing scripts from the host to run
+      volumes:
+        - name: services
+          hostPath:
+            path: {{ .Values.scriptsMounting.hostPath }}

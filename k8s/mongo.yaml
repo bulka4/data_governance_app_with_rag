@@ -1,0 +1,25 @@
+# Pod for interacting with MongoDB through terminal.
+# From this pod, we can connect to MongoDB using the command: 
+#   - mongosh 'mongodb://<mongo-DNS>/<database>' 
+# where:
+#   - Use 'mongodb://mongo-db/db_doc' if we deploy MongoDB using the mongo_db Helm chart and we want to use the database used by the Data Governance Backend 
+#     service from this project
+#   - <mongo-DNS> - DNS name of the MongoDB server
+#       - If we deploy MongoDB using the mongo_db Helm chart, then this is the name of the service specified by the service.nameOverride value in values.yaml
+#   - <database> - Name of the MongoDB database to use
+#       -  If we use the Data Governance Backend service from this project, then it creates and uses the db_doc database
+
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: semantic-search
+  name: mongo-cli
+spec:
+  containers:
+    - name: mongo-cli
+      image: mongo:8
+      command: ["sleep"]
+      args: ["infinity"]
+      stdin: true
+      tty: true
+  restartPolicy: Never

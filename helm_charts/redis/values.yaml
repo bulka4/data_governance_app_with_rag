@@ -1,0 +1,19 @@
+redis:
+  architecture: standalone
+
+  auth:
+    enabled: true
+    password: Password123!
+
+  master:
+    persistence:
+      enabled: true
+      size: 1Gi
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi

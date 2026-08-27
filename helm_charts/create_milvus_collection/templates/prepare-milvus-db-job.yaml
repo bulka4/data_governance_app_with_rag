@@ -1,0 +1,56 @@
+# Job that runs a Python script which prepares a collection in Milvus to store embeddings which will be used for semantic search.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.jobName }}
+  namespace: {{ .Values.namespace }}
+spec:
+  template:
+    spec:
+      initContainers:
+      # Init container which will wait for the Milvus db to be ready
+      - name: wait-for-milvus
+        image: busybox:1.36
+        # Use netcat to wait until Milvus' server's port is reachable. Milvus server is created by the 'milvus' subchart and it has
+        # a service linked called {{ .Release.Name }}.
+        command:
+          - sh
+          - -c
+          - |
+            until nc -z {{ .Release.Name }} 19530; do
+              echo "Waiting for milvus..."
+              sleep 5
+            done
+
+      containers:
+        - name: {{ .Values.jobName }}
+          image: {{ .Values.image }}
+          imagePullPolicy: IfNotPresent
+
+          command: ["python"]
+          args: ["/app/{{ .Values.app.fileName }}"]
+
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+
+            - name: MILVUS_HOST
+              value: {{ .Release.Name }}  # Name of the Service used by the Milvus subchart.
+
+          volumeMounts:
+            # Mount a folder from a volume linked to kind node containing scripts from the host to run
+            - name: services
+              mountPath: /app
+              subPath: {{ .Values.scriptsMounting.subPath }}
+
+      # Volume linked to kind node containing scripts from the host to run
+      volumes:
+        - name: services
+          hostPath:
+            path: {{ .Values.scriptsMounting.hostPath }}
+
+      restartPolicy: Never
+  backoffLimit: 2   # how many retries if the job fails

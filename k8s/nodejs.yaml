@@ -1,0 +1,48 @@
+# Pod for testing the image with Node.JS
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nodejs
+  namespace: semantic-search
+spec:
+  containers:
+  - name: data-preparation
+    image: nodejs:latest
+    imagePullPolicy: IfNotPresent
+
+    command: ["sh", "-c", "sleep 3600"]
+
+    env:
+      - name: NODE_ENV
+        value: production
+
+      - name: MONGO_DNS
+        value: mongo-db
+
+      - name: MONGO_DATABASE
+        value: db_doc
+
+      - name: SQL_SERVER_DNS
+        value: mssql.source-db
+
+      - name: SQL_DATABASE
+        value: master
+
+      - name: SQL_USER
+        value: sa
+
+      - name: SQL_PASSWORD
+        value: Password123!
+
+    volumeMounts:
+      # Mount a folder from a volume linked to kind node containing scripts from the host to run
+      - name: services
+        mountPath: /app
+        subPath: metadata_extraction
+
+  # Volume linked to kind node containing scripts from the host to run
+  volumes:
+    - name: services
+      hostPath:
+        path: /services

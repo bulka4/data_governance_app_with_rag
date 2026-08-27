@@ -1,6 +1,7 @@
 mssql:
   image: mcr.microsoft.com/mssql/server:2022-latest
-  password: "password"
+  # Password for the "sa" built-in system administrator account. We can use it for connecting to this SQL server.
+  password: "Password123!"
 
 service:
   port: 1433

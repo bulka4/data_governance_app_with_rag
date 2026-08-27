@@ -1,0 +1,45 @@
+# ==================== Saving a model in the ONNX format and running it ====================
+# Libraries for:
+#   - Downloading a model from Hugging Face and saving it in the ONNX format
+#   - Loading and running the saved ONNX model in a Python script
+
+# Model loading / Hugging Face
+transformers==4.51.3
+sentence-transformers==4.1.0
+huggingface-hub==0.30.2
+
+# ONNX model loading and inference
+# optimum-onnx allows us to use the optimum-cli CLI tool to download and save a model in the ONNX format
+# onnxruntime is used in Python scripts to load a saved ONNX model and make predictions with it
+optimum-onnx==0.0.3
+onnxruntime==1.21.1
+
+# Useful for tokenization / numerical operations
+tokenizers==0.21.1
+numpy==2.2.4
+
+
+
+# ==================== FastAPI routes ====================
+# Libraries for running FastAPI routes
+
+fastapi==0.115.14
+ray[serve]==2.49.2
+
+
+
+# ==================== MCP server and client ====================
+# Libraries for running a MCP server and client (in FastAPI routes)
+
+fastmcp==2.10.0
+
+
+
+# ==================== Milvus ====================
+# Library for interacting with Milvus
+pymilvus==2.6.0
+
+
+
+# ==================== MongoDB ====================
+pymongo==4.15.5

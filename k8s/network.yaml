@@ -1,0 +1,19 @@
+# What we can test from this pod related to networks:
+#   - DNS resolution - use `nslookup dns-name` or `dig dns-name``
+#   - TCP connectivity - use `nc -vz my-service 8080` or `telnet my-service 8080`
+#   - HTTP/REST - use `curl http://my-service:8080/health`
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: network
+  namespace: semantic-search
+spec:
+  containers:
+    - name: network
+      image: nicolaka/netshoot:latest
+      command: ["/bin/bash"]
+      args: ["-c", "sleep infinity"]
+      stdin: true
+      tty: true
+  restartPolicy: Never

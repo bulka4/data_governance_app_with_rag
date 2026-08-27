@@ -1,0 +1,14 @@
+apiVersion: v2
+name: prepare-milvus-db
+description: |
+  A Helm chart that deploys the Milvus database and a Job that runs a Python script which prepares a collection
+  in Milvus which will be used to store embeddings for semantic search.
+type: application
+version: 0.1.0
+appVersion: "1.0"
+
+dependencies:
+  # Milvus db - Vector db with documents and their vector embeddings used by the tool for semantic search.
+  - name: milvus    # Name of the Milvus subchart
+    version: 4.2.58
+    repository: https://zilliztech.github.io/milvus-helm/

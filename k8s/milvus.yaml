@@ -1,0 +1,26 @@
+# Pod for interacting with Milvus. From this pod, we can connect to Milvus using commands:
+#   - milvus_cli
+#   - connect -uri http://<milvus-host>:19530
+# where <milvus-host> is the Milvus host name. If we deployed Milvus using the helm_charts/create_milvus_collection Helm chart,
+# then this is the release name of this chart.
+
+# Useful Milvus commands once we are connected:
+#   - `list collections` - list available collections
+#   - `query` - Query the data. It will interactively ask us what data we want to retrieve. We can for example provide the following answers:
+#     - collection name: my_docs
+#     - query expression: id >= 0
+#     - fields to return: *
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: milvus-cli
+  namespace: semantic-search
+spec:
+  containers:
+    - name: milvus-cli
+      image: zilliz/milvus_cli:latest
+      command: ["sleep"]
+      args: ["infinity"]
+      stdin: true
+      tty: true

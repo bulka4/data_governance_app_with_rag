@@ -1,7 +1,7 @@
 # Job which initializes the deployed MS SQL Server, that is:
 #   - Connects to the deployed MS SQL Server
 #   - Waits until the MS SQL Server is ready
-# 	- Runs on it a SQL script that creates sample tables, views and procedures
+#   - Runs on it a SQL script that creates sample tables, views and procedures
 
 apiVersion: batch/v1
 kind: Job
@@ -27,9 +27,11 @@ spec:
         args:
         - |
           # Wait until the MS SQL server is ready
-          until sqlcmd -S mssql -U sa -P "$SA_PASSWORD" -Q "SELECT 1"; do
+          until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P "$SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; do
             sleep 5
           done
+
+          echo "SQL Server is ready, running the script."
 
           # Run the init script
           /opt/mssql-tools/bin/sqlcmd \
@@ -37,6 +39,8 @@ spec:
           -U sa \
           -P "$SA_PASSWORD" \
           -i /scripts/init.sql
+
+          echo "Script ran successfully."
 
         env:
         - name: SA_PASSWORD

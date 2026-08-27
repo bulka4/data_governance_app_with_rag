@@ -1,0 +1,49 @@
+namespace: semantic-search
+
+# Parameters for the RayService resource
+rayService:
+  name: semantic-search-rayservice  # Name of the created RayService resource
+  replicas: 1
+  rayVersion: "2.49.1"  # match the Ray version of KubeRay
+  headCpu: "2"
+  headMemory: "3Gi"
+  workerCpu: "2"
+  workerMemory: "3Gi"
+
+# Name of the image to use to run the Ray Serve app
+image: semantic-search
+
+
+# Parameters related to the Ray Serve app
+app:
+  # workingDir - Path to the .zip folder containing all the files needed for the Ray app
+  # fileName - Name of the file with the Ray Serve app (without the .py extension)
+  # folderPath - A full path to the folder containing the Ray Serve app in the image
+  # boundDeploymentName - Name of the bound deployment - output of the APIClassName.bind() command, where APIClassName is name of the 
+  #                       class where we define Rest API endpoints
+  workingDir: /semantic_search/routes.zip
+  fileName: routes
+  boundDeploymentName: semantic_search_service
+
+
+# Environment variables used by the app
+env:
+  # Path to the ONNX model to use for creating embeddings
+  MODEL_PATH: ../ml_models/all-MiniLM-L6-v2
+  
+  # Variables related to Milvus, the same as in the `prepare_milvus_db` Helm chart, values.yaml file
+  MILVUS_HOST: milvus
+  MILVUS_COLLECTION_NAME: my_docs
+  EMBEDDING_FIELD_NAME: embedding
+  TEXT_FIELD_NAME: text
+
+# Parameters regarding mounting Azure File share containing scripts to run in pods.
+scriptsMounting:
+  enabled: true
+  # Path to the folder on the host (kind node) which will be used as a volume. 
+  # The same path needs to be provided in the kind-config.yaml file in the nodes[0].extraMounts.containerPath field to 
+  # specify which path on the host (which runs kind) will correspond to this path.
+  # This path should contain the 'services' folder from the repo on the host.
+  hostPath: /services
+  # Path to a subfolder in volume with FastAPI routes to run which will be mounted into the /routes folder
+  subPath: semantic_search

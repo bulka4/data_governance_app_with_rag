@@ -1,0 +1,16 @@
+mongodb:
+  architecture: standalone
+
+  auth:
+    enabled: false
+
+  service:
+    # Set up the name of the service
+    nameOverride: mongo-db
+    type: ClusterIP
+    ports:
+      mongodb: 27017
+
+  persistence:
+    enabled: true
+    size: 5Gi
