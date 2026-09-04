@@ -19,10 +19,16 @@ spec:
     command: ["/bin/bash"]
     args: ["-c", "while true; do sleep 3600; done"]
 
+    env:
+      {{- range $key, $value := .Values.env }}
+      - name: {{ $key }}
+        value: {{ $value | quote }}
+      {{- end }}
+
     volumeMounts:
     # Mount a folder from a volume linked to the host containing script with FastAPI routes.
     - name: scripts
-      mountPath: /semantic_search
+      mountPath: /app
       subPath: semantic_search
 
   # Volume linked to the host containing script with FastAPI routes

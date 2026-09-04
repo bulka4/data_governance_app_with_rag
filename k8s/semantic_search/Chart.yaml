@@ -1,0 +1,7 @@
+apiVersion: v2
+name: semantic-search
+description: |
+  A pod for testing applications for semantic search.
+type: application
+version: 0.1.0
+appVersion: "1.0"

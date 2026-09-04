@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: semantic-search-mcp
+  namespace: semantic-search
+  labels:
+    app: semantic-search-mcp
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: semantic-search-mcp
+  template:
+    metadata:
+      labels:
+        app: semantic-search-mcp
+    spec:
+      containers:
+      - name: mcp
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+        command: ["python", "/app/{{ .Values.script }}"]
+
+        ports:
+          - name: http
+            containerPort: {{ .Values.service.port }}
+            protocol: TCP
+
+        env:
+          {{- range $key, $value := .Values.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+
+        volumeMounts:
+          # Mount a folder from a volume linked to the host containing script with FastAPI routes.
+          - name: scripts
+            mountPath: /app
+            subPath: {{ .Values.scriptsMounting.subPath }}
+
+      # Volume linked to the host containing script with FastAPI routes
+      volumes:
+        - name: scripts
+          hostPath:
+            path: {{ .Values.scriptsMounting.hostPath }}

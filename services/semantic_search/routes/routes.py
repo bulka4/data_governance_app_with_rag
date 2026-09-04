@@ -1,11 +1,13 @@
 '''
-Ray Serve application with routes for a semantic search. To be deployed using Ray Serve (the KubeRay operator on Kubernetes).
+- Ray Serve application with routes for a semantic search. 
+- To be deployed using the Ray Serve (the KubeRay operator on Kubernetes or by running the `serve run` command in a terminal).
+- It performs semantic search by searching through a specific Milvus collection
 '''
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from ray import serve
-from pymilvus import connections, Collection
+from pymilvus import MilvusClient
 import os
 import traceback
 
@@ -14,8 +16,11 @@ from functions import EmbeddingModel
 
 
 # ================= Parameters =================
+# Whether or not to download a new model for generating embeddings from the Hugging Face (if we don't provide it,
+# we need to have a model saved already and provide a path to it using the model_path parameter)
+download_model = os.getenv('DOWNLOAD_MODEL') == 'True'
 # Path with the saved ONNX model to use for generating sentence embeddings
-model_path = os.getenv('MODEL_PATH') or '../ml_models/all-MiniLM-L6-v2'
+model_path = os.getenv('MODEL_PATH') or '/app/ml_models/all-MiniLM-L6-v2'
 
 
 # We are using an index type of the IVF family in this collection. The 'nprobe' parameter specifies a number of 
@@ -25,10 +30,14 @@ nprobe = 10
 milvus_host = os.getenv('MILVUS_HOST') or 'localhost'
 # Name of the collection in the Milvus db with documents used for semantic search.
 milvus_collection = os.getenv('MILVUS_COLLECTION_NAME') or 'my_docs'
-# Name of the field in the Collection which holds vector embeddings.
+# Name of the field in the milvus collection which holds vector embeddings.
 embedding_field_name = os.getenv('EMBEDDING_FIELD_NAME') or 'embedding'
-# Name of the field in the Collection which holds document text.
+# Name of the field in the milvus collection which holds metadata
+metadata_field_name = os.getenv('METADATA_FIELD_NAME') or 'metadata'
+# Name of the field in the milvus collection which holds a text chunk
 text_field_name = os.getenv('TEXT_FIELD_NAME') or 'text'
+# Name of the field in metadata in the milvus collection which represents an ID of the object which documentation refers to
+object_id_field_name = os.getenv('OBJECT_ID_FIELD_NAME') or 'object_id'
 
 
 
@@ -49,48 +58,82 @@ async def debug_exception_handler(request: Request, exc: Exception):
 @serve.ingress(app)
 class RAGService:
     def __init__(
-        self
-        ,model_path
-        ,milvus_host
-        ,milvus_collection
+        self,
+        model_path,
+        milvus_host,
+        milvus_collection,
+        embedding_field_name,
+        metadata_field_name,
+        text_field_name,
+        object_id_field_name,
+        nprobe,
     ):
         # Prepare a model for generating embeddings
         self.model = EmbeddingModel(
-            download_model=False,
+            download_model=download_model,
             model_name=None,
             model_path=model_path,
             batch_size=32,
         )
-
+        
         # ----- Connect to Milvus -----
-        connections.connect("default", host=milvus_host, port="19530")
-        self.collection = Collection(milvus_collection)
-        self.collection.load()
+        self.milvus = MilvusClient(
+            uri=f"http://{milvus_host}:19530"
+        )
+
+        self.milvus_collection = milvus_collection
+        self.embedding_field_name = embedding_field_name
+        self.metadata_field_name = metadata_field_name
+        self.text_field_name = text_field_name
+        self.object_id_field_name = object_id_field_name
+        self.nprobe = nprobe
+
+        self.milvus.load_collection(
+            collection_name=self.milvus_collection
+        )
 
 
     @app.get("/search")
-    async def ask(self, query: str, top_k: int = 3) -> dict:
+    async def ask(self, query: str, top_k: int = 3) -> list[dict]:
         """
-        Function for semantic search.
+        Function for semantic search. It returns a list of dictionaries in the following format:
+        [
+            {
+                'object_id': object_id_1,               # ID of the document (taken from the database documentation database)
+                'text_chunk': text_chunk_1              # One text chunk from the document
+                'similarity_score': similarity_score_1  # Similarity score for this text chunk and the given query
+            },
+            ...
+        ]
         """
         # embedding for the user's query
         sentence_embedding = self.model.run(query)
 
-        # Find documents in the Milvus vector database similar to the user's query 
-        results = self.collection.search(
-            data=sentence_embedding,
-            anns_field=embedding_field_name,
-            # param={"metric_type": "COSINE", "params": {"nprobe": nprobe}},
-            param={"params": {"nprobe": nprobe}},
+        results = self.milvus.search(
+            collection_name=self.milvus_collection,
+            data=sentence_embedding.tolist(),
+            anns_field=self.embedding_field_name,
             limit=top_k,
-            output_fields=[text_field_name]
+            output_fields=[self.metadata_field_name, self.text_field_name],
+            search_params={"params": {"nprobe": self.nprobe}},
         )
 
-        # Return text found in the vector database
-        return [result.entity.get(text_field_name) for result in results[0]]
+        return [
+            {
+                'object_id': result.entity.get(self.metadata_field_name).get(self.object_id_field_name),
+                'text_chunk': result.entity.get(self.text_field_name),
+                'similarity_score': result.get('distance'),
+            }
+            for result in results[0]
+        ]
 
 semantic_search_service = RAGService.bind(
-    model_path=model_path
-    ,milvus_host=milvus_host
-    ,milvus_collection=milvus_collection
+    model_path=model_path,
+    milvus_host=milvus_host,
+    milvus_collection=milvus_collection,
+    embedding_field_name=embedding_field_name,
+    metadata_field_name=metadata_field_name,
+    text_field_name=text_field_name,
+    object_id_field_name=object_id_field_name,
+    nprobe=nprobe,
 )

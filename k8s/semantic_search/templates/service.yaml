@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: semantic-search
+  namespace: semantic-search
+spec:
+  type: ClusterIP
+  selector:
+    app: semantic-search
+  ports:
+    # Port used by the Ray Serve
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP

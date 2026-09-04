@@ -21,17 +21,22 @@ numpy==2.2.4
 
 
 # ==================== FastAPI routes ====================
-# Libraries for running FastAPI routes
+# Libraries for running FastAPI routes:
+#   - protobuf - we need to have a specific version which is compatible with the `ray[serve]` library
 
 fastapi==0.115.14
 ray[serve]==2.49.2
+protobuf==6.33.5
 
 
 
 # ==================== MCP server and client ====================
 # Libraries for running a MCP server and client (in FastAPI routes)
-
 fastmcp==2.10.0
+mcp==1.10.1
+httpx==0.28.1
+pydantic==2.11.7
+pydantic-settings==2.10.1
 
 
 

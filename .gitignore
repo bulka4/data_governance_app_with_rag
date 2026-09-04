@@ -2,3 +2,4 @@
 **/node_modules
 package-lock.json
 **/ml_models
+**/__pycache__

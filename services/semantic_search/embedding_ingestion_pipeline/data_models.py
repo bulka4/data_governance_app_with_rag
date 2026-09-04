@@ -8,10 +8,10 @@ class DocumentChunk:
     """
 
     text: str
-    object_type: str       # "table" or "column"
-    object_name: str
-    object_id: Any
-    chunk_id: int
+    object_type: str    # "table" or "column"
+    object_name: str    # name of the table or column
+    object_id: Any      # ID of the table document (taken from the database documentation database)
+    chunk_id: int       # ID of the chunk that belongs to the document
 
     @property
     def metadata(self) -> dict[str, Any]:

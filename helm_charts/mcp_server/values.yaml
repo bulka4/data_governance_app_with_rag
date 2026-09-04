@@ -1,0 +1,32 @@
+replicaCount: 1
+
+image:
+  repository: semantic-search
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+
+env:
+  SEMANTIC_SEARCH_URL: "http://semantic-search-rayservice-head:8000/search"
+  MCP_HOST: "0.0.0.0"
+  MCP_PORT: "8000"
+
+resources: {}
+
+# Name of the script to run
+script: mcp_server.py
+
+# Parameters regarding mounting Azure File share containing scripts to run in pods.
+scriptsMounting:
+  enabled: true
+  # Path to the folder on the host (kind node) which will be used as a volume. 
+  # The same path needs to be provided in the kind-config.yaml file in the nodes[0].extraMounts.containerPath field to 
+  # specify which path on the host (which runs kind) will correspond to this path.
+  # This path should contain the 'services' folder from the repo on the host.
+  hostPath: /services
+  # Path to a subfolder in the volume containing the MCP server script to run (given by the 'script' parameter) which will 
+  # be mounted into the /app folder
+  subPath: semantic_search/mcp_server

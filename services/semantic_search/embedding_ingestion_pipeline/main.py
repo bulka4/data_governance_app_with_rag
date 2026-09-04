@@ -42,6 +42,7 @@ def main():
     milvus_embedding_field_name = os.getenv("EMBEDDING_FIELD_NAME")
     milvus_text_field_name = os.getenv("TEXT_FIELD_NAME")
     milvus_metadata_field_name = os.getenv("METADATA_FIELD_NAME")
+    milvus_id_field_name = os.getenv("ID_FIELD_NAME")
 
 
     # --------------------------------------------------------
@@ -71,7 +72,8 @@ def main():
         collection_name=milvus_collection,
         embedding_field_name=milvus_embedding_field_name,
         text_field_name=milvus_text_field_name,
-        metadata_field_name=milvus_metadata_field_name
+        metadata_field_name=milvus_metadata_field_name,
+        id_field_name=milvus_id_field_name,
     )
 
     # --------------------------------------------------------

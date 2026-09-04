@@ -50,7 +50,7 @@ spec:
               volumeMounts:
                 # Mount a folder from a volume linked to the host containing script with FastAPI routes.
                 - name: scripts
-                  mountPath: /semantic_search
+                  mountPath: /app
                   subPath: {{ .Values.scriptsMounting.subPath }}
 
           # Volume linked to the host containing script with FastAPI routes
@@ -86,7 +86,7 @@ spec:
                 volumeMounts:
                 # Mount a folder from a volume linked to the host containing script with FastAPI routes.
                 - name: scripts
-                  mountPath: /semantic_search
+                  mountPath: /app
                   subPath: {{ .Values.scriptsMounting.subPath }}
                   
             # Volume linked to the host containing script with FastAPI routes

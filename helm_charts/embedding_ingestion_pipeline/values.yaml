@@ -18,9 +18,9 @@ env:
   #         - MODEL_PATH - Where to save the downloaded model
   #     - when download_model = False, then we need to provide only the model_path argument specifying the path of the
   #         ONNX model to load
-  DOWNLOAD_MODEL: "True"
+  DOWNLOAD_MODEL: "False"
   MODEL_NAME: sentence-transformers/all-MiniLM-L6-v2
-  MODEL_PATH: ../ml_models/all-MiniLM-L6-v2
+  MODEL_PATH: /app/ml_models/all-MiniLM-L6-v2
   
   # Parameters related to Milvus collection where to insert the embeddings to
   MILVUS_HOST: milvus
@@ -28,6 +28,10 @@ env:
   EMBEDDING_FIELD_NAME: embedding
   TEXT_FIELD_NAME: text
   METADATA_FIELD_NAME: metadata
+  ID_FIELD_NAME: id
+
+# Path to the app to run
+appPath: /app/embedding_ingestion_pipeline/main.py
 
 # Parameters regarding mounting a volume containing scripts to run in pods.
 scriptsMounting:
@@ -36,5 +40,5 @@ scriptsMounting:
   # specify which path on the host (which runs kind) will correspond to this path.
   # This path should contain the 'services' folder from the repo on the host.
   hostPath: /services
-  # Path to a subfolder in volume with the app to run which will be mounted 
-  subPath: semantic_search/embedding_ingestion_pipeline
+  # Path to a subfolder in volume with the app to run which will be mounted to the /app folder
+  subPath: semantic_search

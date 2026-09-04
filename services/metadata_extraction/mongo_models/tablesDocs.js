@@ -37,9 +37,9 @@ const table_doc_schema = new mongoose.Schema({
         type: String
     },
     // tableDescription encoded (changed into a vector) using transformer model for checking sentence similarity
-    tableDescriptionEncoded: {
-        type: Array
-    },
+    // tableDescriptionEncoded: {
+    //     type: Array
+    // },
     columns: [col_doc_schema]
 }, 
 {collection: 'tablesDocs'})

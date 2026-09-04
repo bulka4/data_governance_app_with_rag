@@ -52,11 +52,16 @@ app:
 
 # Environment variables used by the Python script
 env:
+  # Name of the collection in the Milvus db with documents used for semantic search.
   MILVUS_COLLECTION_NAME: my_docs
+  # Name of the file with a unique ID
   ID_FIELD_NAME: id
+  # Name of the field in the milvus collection which holds vector embeddings.
   EMBEDDING_FIELD_NAME: embedding
-  TEXT_FIELD_NAME: text
+  # Name of the field in the milvus collection which holds metadata
   METADATA_FIELD_NAME: metadata
+  # Name of the field in the milvus collection which holds a text chunk
+  TEXT_FIELD_NAME: text
 
 # Parameters regarding mounting a volume containing scripts to run in pods.
 scriptsMounting:

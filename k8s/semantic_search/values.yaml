@@ -1,0 +1,13 @@
+# Environment variables used by the app
+env:
+  # Whether or not to download a new model for generating embeddings from the Hugging Face (if we don't provide it,
+  # we need to have a model saved already and provide a path to it using the MODEL_PATH parameter)
+  DOWNLOAD_MODEL: False
+  # Path to the ONNX model to use for creating embeddings
+  MODEL_PATH: /semantic_search/ml_models/all-MiniLM-L6-v2
+  
+  # Variables related to Milvus, the same as in the `prepare_milvus_db` Helm chart, values.yaml file
+  MILVUS_HOST: milvus
+  MILVUS_COLLECTION_NAME: my_docs
+  EMBEDDING_FIELD_NAME: embedding
+  TEXT_FIELD_NAME: text

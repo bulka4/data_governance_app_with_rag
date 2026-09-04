@@ -12,7 +12,11 @@ class MilvusVectorStore(VectorStore):
         - id: INT64
         - embedding: FLOAT_VECTOR
         - text: VARCHAR
-        - metadata: JSON
+        - metadata: JSON - with fields:
+            - object_type
+            - object_name
+            - object_id
+            - chunk_id
 
     Before inserting embeddings, all the current embeddings in the collection are removed.
 
@@ -25,13 +29,15 @@ class MilvusVectorStore(VectorStore):
         collection_name: str,
         embedding_field_name: str,
         text_field_name: str,
-        metadata_field_name: str
+        metadata_field_name: str,
+        id_field_name: str
     ):
         self.client = MilvusClient(uri)
         self.collection_name = collection_name
         self.embedding_field_name = embedding_field_name
         self.text_field_name = text_field_name
         self.metadata_field_name = metadata_field_name
+        self.id_field_name = id_field_name
 
 
 
