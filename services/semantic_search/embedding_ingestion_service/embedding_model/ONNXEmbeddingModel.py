@@ -1,15 +1,18 @@
-"""
-Functions to be used in the routes.py script
-"""
-
-from transformers import AutoTokenizer
-import onnxruntime as ort
 from pathlib import Path
 import subprocess
 import numpy as np
+import onnxruntime as ort
+from transformers import AutoTokenizer
 
+from .EmbeddingModel import EmbeddingModel
 
-class EmbeddingModel():
+class ONNXEmbeddingModel(EmbeddingModel):
+    '''
+    Implementation of the EmbeddingModel interface representing the model saved in ONNX used for generating vector embeddings.
+
+    Using this class we can download a new model from Hugging Face and save it in the ONNX format or load already saved ONNX model
+    and load this model to be ready to use.
+    '''
     def __init__(
         self,
         download_model: bool = False,
@@ -22,13 +25,13 @@ class EmbeddingModel():
             - download_model
                 - When set to False, it will load already saved ONNX model
                 - When set to True, it will download a new model from Hugging Face if it doesn't exist yet and save it in the ONNX format 
-                    using optimum-cli
+                  using optimum-cli
             - model_name, model_path
                 - when download_model = True, then we need to provide both arguments:
                     - model_name - Name of the model to download using optimum-cli, e.g. sentence-transformers/all-MiniLM-L6-v2
                     - model_path - Where to save the downloaded model
                 - when download_model = False, then we need to provide only the model_path argument specifying the path of the
-                    ONNX model to load
+                  ONNX model to load
             - batch_size - Batch size for the model - i.e. for how many texts to generate emebddings at once.
         '''
         self.batch_size = batch_size
@@ -36,6 +39,7 @@ class EmbeddingModel():
         self.model_path = Path(model_path)
 
         self._load_model(download_model)
+
 
 
     def _load_model(
@@ -70,7 +74,7 @@ class EmbeddingModel():
 
     def _download_model(self):
         '''
-        Download a new model from Hugging Face if it doesn't exist yet and save it in the ONNX format.
+        Download a new model from Hugging Face if it doesn't exist yet and save it in the ONNX format
         To use the optimum-cli CLI tool, we need to have the "optimum-onnx" pip package installed
         '''
         subprocess.run(
@@ -88,26 +92,49 @@ class EmbeddingModel():
         )
 
 
-    def run(self, text: str) -> np.array:
-        """
-        Run the model to generate an embedding for a given text.
-        """
+
+    def embed(self, texts: list[str]) -> np.ndarray:
+        'Generate embeddings using the loaded ONNX model.'
+        if not texts:
+            return np.empty((0, 0), dtype=np.float32)
+
+        all_embeddings = []
+
+        for start in range(
+            0,
+            len(texts),
+            self.batch_size
+        ):
+            batch = texts[start : start + self.batch_size]
+            embeddings = self._model_output(batch)
+            all_embeddings.append(embeddings)
+
+        return np.vstack(all_embeddings)
+
+
+
+    def _model_output(
+        self,
+        texts: list[str]
+    ) -> np.ndarray:
+        '''
+        Use the loaded model to generate embeddings for the specified texts.
+        '''
         inputs = self.tokenizer(
-            text,
-            return_tensors="np", # return NumPy tensors
+            texts,
+            return_tensors="np",
+            padding=True,
+            truncation=True
         )
 
-        # Use "sentence_embedding" to get only a sentence embedding. To get output vectors for every input token, use "token_embeddings".
-        # We can also provide both options: ["sentence_embedding", "token_embeddings"], and then:
-        #   - outputs[0] - sentence embedding (of shape ['batch_size', 'embedding_dim'])
-        #   - outputs[1] - token embeddings (of shape ['batch_size', 'sequence_length', 'embedding_dim'])
         outputs = self.session.run(
             ["sentence_embedding"],
             {
                 "input_ids": inputs["input_ids"],
-                "attention_mask": inputs["attention_mask"],
-            },
+                "attention_mask": inputs["attention_mask"]
+            }
         )
 
-        # Return sentence embeddings
-        return outputs[0]
+        embeddings = outputs[0]
+
+        return embeddings.astype(np.float32)

@@ -1,13 +1,52 @@
+# Name of the service used by the pod. This is useful if we want to run in this pod some service that other services should be able to 
+# communicate with.
+# Common values to use:
+#   - 'rag-rayservice-head' - the same name is used by the Ray Serve REST API server deployed using the `rag_rest_api` Helm chart
+#        with endpoints for semantic search and RAG. We can use this name to run from this pod the same Ray Serve REST API server.
+serviceName: rag-rayservice-head
+
 # Environment variables used by the app
 env:
-  # Whether or not to download a new model for generating embeddings from the Hugging Face (if we don't provide it,
-  # we need to have a model saved already and provide a path to it using the MODEL_PATH parameter)
-  DOWNLOAD_MODEL: False
-  # Path to the ONNX model to use for creating embeddings
-  MODEL_PATH: /semantic_search/ml_models/all-MiniLM-L6-v2
+  # URL of the MCP server to use for semantic search
+  MCP_SERVER_URL: http://mcp:8000/mcp/
+  # Name of the MCP tool for semantic search to use
+  SEMANTIC_SEARCH_TOOL: search_docs
+
+  # - download_model
+  #     - When set to "False", it will load already saved ONNX model
+  #     - When set to "True", it will download a new model from Hugging Face if it doesn't exist yet and save it in the ONNX format 
+  #         using optimum-cli
+  # - model_name, model_path
+  #     - when download_model = True, then we need to provide both arguments:
+  #         - model_name - Name of the model to download using optimum-cli, e.g. sentence-transformers/all-MiniLM-L6-v2
+  #         - model_path - Where to save the downloaded model
+  #     - when download_model = False, then we need to provide only the model_path argument specifying the path of the
+  #         ONNX model to load
   
-  # Variables related to Milvus, the same as in the `prepare_milvus_db` Helm chart, values.yaml file
+  # Parameters for the model for generating embeddings (download_model, model_name, model_path)
+  DOWNLOAD_EMBEDDING_MODEL: "False"
+  EMBEDDING_MODEL_NAME: 
+  EMBEDDING_MODEL_PATH: /app/ml_models/embeddings/all-MiniLM-L6-v2
+
+  # Parameters for the model for generating answers (download_model, model_name, model_path)
+  DOWNLOAD_ANSWER_MODEL: "False"
+  # example model name to download: sshleifer/tiny-gpt2
+  ANSWER_MODEL_NAME: 
+  ANSWER_MODEL_PATH: /app/ml_models/answer/tiny-gpt2
+  
+  # ====================================================================================================
+  # Variables related to Milvus, the same as in the 'create_milvus_collection' Helm chart, values.yaml file
+  # ====================================================================================================
+  
+  # IP address or DNS name of the Milvus db where we store documents used for semantic search.
   MILVUS_HOST: milvus
+  # Name of the collection in the Milvus db with documents used for semantic search.
   MILVUS_COLLECTION_NAME: my_docs
+  # Name of the field in the milvus collection which holds vector embeddings.
   EMBEDDING_FIELD_NAME: embedding
+  # Name of the field in the milvus collection which holds metadata
+  METADATA_FIELD_NAME: metadata
+  # Name of the field in the milvus collection which holds a text chunk
   TEXT_FIELD_NAME: text
+  # Name of the field in metadata in the milvus collection which represents an ID of the object which documentation refers to
+  OBJECT_ID_FIELD_NAME: object_id

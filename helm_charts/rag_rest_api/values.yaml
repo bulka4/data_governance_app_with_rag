@@ -2,7 +2,7 @@ namespace: semantic-search
 
 # Parameters for the RayService resource
 rayService:
-  name: semantic-search-rayservice  # Name of the created RayService resource
+  name: rag-rayservice  # Name of the created RayService resource
   replicas: 1
   rayVersion: "2.49.1"  # match the Ray version of KubeRay
   headCpu: "2"
@@ -23,16 +23,36 @@ app:
   #                       class where we define Rest API endpoints
   workingDir: /app/routes.zip
   fileName: routes
-  boundDeploymentName: semantic_search_service
+  boundDeploymentName: rag_service
 
 
 # Environment variables used by the app
 env:
-  # Whether or not to download a new model for generating embeddings from the Hugging Face (if we don't provide it,
-  # we need to have a model saved already and provide a path to it using the MODEL_PATH parameter)
-  DOWNLOAD_MODEL: False
-  # Path to the ONNX model to use for creating embeddings (this is a path inside the container where we use mounting)
-  MODEL_PATH: /app/ml_models/all-MiniLM-L6-v2
+  # URL of the MCP server to use for semantic search
+  MCP_SERVER_URL: http://mcp:8000/mcp/
+  # Name of the MCP tool for semantic search to use
+  SEMANTIC_SEARCH_TOOL: search_docs
+
+  # - download_model
+  #     - When set to "False", it will load already saved ONNX model
+  #     - When set to "True", it will download a new model from Hugging Face if it doesn't exist yet and save it in the ONNX format 
+  #         using optimum-cli
+  # - model_name, model_path
+  #     - when download_model = True, then we need to provide both arguments:
+  #         - model_name - Name of the model to download using optimum-cli, e.g. sentence-transformers/all-MiniLM-L6-v2
+  #         - model_path - Where to save the downloaded model
+  #     - when download_model = False, then we need to provide only the model_path argument specifying the path of the
+  #         ONNX model to load
+  
+  # Parameters for the model for generating embeddings (download_model, model_name, model_path)
+  DOWNLOAD_EMBEDDING_MODEL: "False"
+  EMBEDDING_MODEL_NAME: sentence-transformers/all-MiniLM-L6-v2
+  EMBEDDING_MODEL_PATH: /app/ml_models/embeddings/all-MiniLM-L6-v2
+
+  # Parameters for the model for generating answers (download_model, model_name, model_path)
+  DOWNLOAD_ANSWER_MODEL: "False"
+  ANSWER_MODEL_NAME: sshleifer/tiny-gpt2
+  ANSWER_MODEL_PATH: /app/ml_models/answer/tiny-gpt2
   
   # ====================================================================================================
   # Variables related to Milvus, the same as in the 'create_milvus_collection' Helm chart, values.yaml file

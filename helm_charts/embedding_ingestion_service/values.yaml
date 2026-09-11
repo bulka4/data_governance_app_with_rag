@@ -4,6 +4,13 @@ image:
   pullPolicy: IfNotPresent
 
 env:
+  # Kafka host to connect to. If we use the 'helm_charts/kafka' Helm chart to deploy Kafka and installed chart
+  # is called 'kafka', then this value should be 'kafka:9092'
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  # Kafka topic with messages about updated table descriptions to subscribe to (this service will read messages from this 
+  # topic and based on that ingest embeddings for updated table descriptions)
+  KAFKA_TOPIC: table-descriptions
+  
   # Parameters related to the MongoDB database with a source documentation to create embeddings for
   MONGO_HOST: mongo-db
   MONGO_DB: db_doc
@@ -31,7 +38,7 @@ env:
   ID_FIELD_NAME: id
 
 # Path to the app to run
-appPath: /app/embedding_ingestion_pipeline/main.py
+appPath: /app/embedding_ingestion_service/main.py
 
 # Parameters regarding mounting a volume containing scripts to run in pods.
 scriptsMounting:

@@ -6,6 +6,9 @@ image:
   pullPolicy: IfNotPresent
 
 env:
+  # Kafka topic which we send messages about updated table description to (consumer will read messages from this topic)
+  KAFKA_TOPIC: table-descriptions
+  
   # NODE_ENV = 'development' will cause that running 'nmp install' will install also the packages from the 'devDependencies'
   # section in the package.json file. We want this so we can use 'nodemon' to run the nodejs app, so we can change its code
   # and see results immediately, without restarting the app.

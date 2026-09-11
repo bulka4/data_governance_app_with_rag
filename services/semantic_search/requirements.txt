@@ -1,4 +1,4 @@
-# ==================== Saving a model in the ONNX format and running it ====================
+# ==================== Working with ONNX model ====================
 # Libraries for:
 #   - Downloading a model from Hugging Face and saving it in the ONNX format
 #   - Loading and running the saved ONNX model in a Python script
@@ -19,9 +19,15 @@ tokenizers==0.21.1
 numpy==2.2.4
 
 
+# ==================== Embedding ingestion pipeline ====================
+# Embedding ingestion pipeline requires the same libraries as in the above section "Saving a model in the ONNX format and running it"
+# plus additionally libraries below:
+confluent-kafka==2.13.2
 
-# ==================== FastAPI routes ====================
-# Libraries for running FastAPI routes:
+
+
+# ==================== Semantic search REST API ====================
+# Libraries for running Semantic search REST API:
 #   - protobuf - we need to have a specific version which is compatible with the `ray[serve]` library
 
 fastapi==0.115.14
@@ -47,4 +53,12 @@ pymilvus==2.6.0
 
 
 # ==================== MongoDB ====================
+# Library for interacting with MongoDB
 pymongo==4.15.5
+
+
+
+# ==================== RAG system ====================
+# Libraries for the RAG REST API server. This system also needs the same libraries as the Semantic search REST API, MCP server
+# and libraries for working with ONNX models.
+langgraph==0.6.5

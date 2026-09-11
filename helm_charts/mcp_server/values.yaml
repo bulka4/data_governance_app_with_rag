@@ -6,12 +6,18 @@ image:
   pullPolicy: IfNotPresent
 
 service:
+  # Name of the service used by the MCP server
+  name: mcp
   type: ClusterIP
   port: 8000
 
 env:
-  SEMANTIC_SEARCH_URL: "http://semantic-search-rayservice-head:8000/search"
+  # URL of the semantic search REST API server to use
+  SEMANTIC_SEARCH_URL: "http://rag-rayservice-head:8000/search"
+  # When MCP_HOST = '127.0.0.1', then server accepts only connections from the same server.
+  # When MCP_HOST = '0.0.0.0', then server accepts connections from all servers.
   MCP_HOST: "0.0.0.0"
+  # Port where the MCP server will listen
   MCP_PORT: "8000"
 
 resources: {}

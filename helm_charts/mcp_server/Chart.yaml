@@ -1,6 +1,10 @@
 apiVersion: v2
 name: semantic-search-mcp
-description: MCP server for the semantic search service
+description: |
+  MCP server for the semantic search service. It will listen at 'http://<hostname>:<port>' where 
+  'hotname' and 'port' are Chart parameter defined in values.yaml:
+    - 'hostname' is specified by the service.name parameter
+    - 'port' is specified by the service.port parameter
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

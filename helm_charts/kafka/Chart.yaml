@@ -1,0 +1,10 @@
+apiVersion: v2
+name: my_kafka
+description: Kafka deployment
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: kafka
+    version: "32.4.3"
+    repository: "oci://registry-1.docker.io/bitnamicharts"
