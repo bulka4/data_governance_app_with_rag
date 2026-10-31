@@ -81,13 +81,6 @@ class RAGWorkflow:
                 top_k=state["top_k"],
             )
         )
-        # retrieved_docs: list[SearchResult] = [
-        #     SearchResult(
-        #         object_id=1,
-        #         text_chunk='test',
-        #         similarity_score=0.9,
-        #     )
-        # ]
 
         return {
             "retrieved_docs": retrieved_docs,

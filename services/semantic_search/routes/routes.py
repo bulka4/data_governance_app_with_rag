@@ -169,7 +169,7 @@ class RAGService:
         query: str,
         top_k: int = 3,
     ) -> list[dict]:
-        """
+        """        
         Function for semantic search. It returns a list of dictionaries in the following format:
         [
             {

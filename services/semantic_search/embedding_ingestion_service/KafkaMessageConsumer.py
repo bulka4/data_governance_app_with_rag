@@ -37,9 +37,12 @@ class KafkaMessageConsumer:
         print("Subscribed to a topic", flush=True)
 
     def consume(self):
+        """
+        Run an infinite loop that waits for Kafka messages and yields them as a dictionary one at a time.
+        """
+
         print("Starting poll loop", flush=True)
 
-        # Infinite loop that waits for Kafka messages and yields them as a dictionary one at a time.
         while True:
             # print("Polling...", flush=True)
             # Check whether a message is available (wait 1 sec for a message to arrive)
